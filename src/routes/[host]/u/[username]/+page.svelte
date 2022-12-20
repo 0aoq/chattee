@@ -86,7 +86,7 @@
 	}
 
 	.pfp:hover {
-		transform: translate3d(0, 0, 50px);
+		transform: scale(1.02);
 		box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
 	}
 

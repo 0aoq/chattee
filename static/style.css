@@ -1,13 +1,1 @@
 @import url("https://www.oxvs.net/shared/out/css/style.css");
-
-@media (prefers-color-scheme: dark) {
-	* {
-		background-color: inherit;
-		color: inherit;
-	}
-	html,
-	img:not([src$=".svg"]) {
-		/* no dark ! */
-		filter: invert(0) hue-rotate(0deg);
-	}
-}

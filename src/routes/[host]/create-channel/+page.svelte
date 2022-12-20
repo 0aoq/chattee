@@ -43,10 +43,7 @@
 					<form
 						class="flex mt-12 mb-8"
 						style="flex-direction: column; width: var(--u-100);"
-						on:submit={(e) => {
-							e.preventDefault();
-							create(e);
-						}}
+						on:submit|preventDefault={create}
 					>
 						<label for="name" class="mb-2"><b>Channel Name&ast;</b></label>
 						<input type="text" name="name" required placeholder="Channel Name" />

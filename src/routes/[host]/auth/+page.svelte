@@ -33,7 +33,7 @@
 				password: e.target.password.value,
 				passwordConfirm: e.target.password.value,
 				displayName: e.target.username.value // <- we'll add support for this later
-													 // TODO: that
+				// TODO: that
 			};
 
 			await pb.collection("users").create(data);
@@ -44,7 +44,7 @@
 	}
 	// base submit function
 	let action = "signup";
-    
+
 	function baseSubmit(e: any) {
 		if (action === "signup") signup(e);
 		else login(e);
@@ -66,10 +66,7 @@
 					<form
 						class="flex mt-12 mb-8"
 						style="flex-direction: column; width: var(--u-100);"
-						on:submit={(e) => {
-							e.preventDefault();
-							baseSubmit(e);
-						}}
+						on:submit|preventDefault={baseSubmit}
 					>
 						<label for="username" class="mb-2"><b>Username&ast;</b></label>
 						<input type="text" name="username" required placeholder="Username" />
