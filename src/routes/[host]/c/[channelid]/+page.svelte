@@ -26,6 +26,11 @@
 
 		messages = msgs.items;
 
+		setTimeout(() => {
+			// scroll to the bottom so the last message is in view
+			window.scrollTo(0, document.body.scrollHeight);
+		}, 500);
+
 		// load channel
 		channel = await pb.collection("channels").getOne(channelid, {
 			expand: "owner"
@@ -55,6 +60,7 @@
 		}
 	}
 
+	let attachedFile: File | null = null;
 	async function sendMessage(e: any) {
 		e.preventDefault();
 		if (!pb.authStore.model) return; // <- we need a user!
@@ -62,12 +68,24 @@
 		if (!channel.members.includes(pb.authStore.model.id)) return; // <- must be a member of this channel!
 
 		try {
+			// collect data
+			const data = new FormData();
+			data.set("channel", channelid);
+			data.set("content", e.target.message.value.trim());
+			data.set("sender", pb.authStore.model.id);
+
+			if (attachedFile) {
+				data.append("attachment", attachedFile);
+
+				const n = attachedFile.name;
+				data.set(
+					"attachmentType",
+					n.endsWith(".mp4") || n.endsWith(".webm") || n.endsWith(".mov") ? "video" : "image"
+				);
+			}
+
 			// try to send message
-			await pb.collection("messages").create({
-				channel: channelid,
-				content: e.target.message.value.trim(),
-				sender: pb.authStore.model.id
-			});
+			await pb.collection("messages").create(data);
 
 			e.target.message.value = "";
 		} catch {
@@ -105,6 +123,21 @@
 		} catch {
 			alert("Failed to leave channel!");
 		}
+	}
+
+	async function attachFile() {
+		// create file input
+		const input = document.createElement("input");
+		input.setAttribute("type", "file");
+
+		// open picker dialog
+		input.click();
+
+		// listen for changes to the file status, load file once added
+		input.addEventListener("change", () => {
+			if (!input.files[0]) return;
+			attachedFile = input.files[0];
+		});
 	}
 </script>
 
@@ -158,15 +191,39 @@
 				{#if pb.authStore.model}
 					<div class="file-browser" style="width: 100%;">
 						{#each messages as msg}
-							<div class="listing">
+							<div class="listing message" id={msg.id}>
 								<span class="flex">
 									<b
 										><a href="/{host}/u/{msg.expand.sender.username}?return_channel={channelid}"
-											>{msg.expand.sender.username}</a
+											>{msg.expand.sender.username + " "}</a
 										></b
 									>:
-									{msg.content}</span
-								>
+									<div>
+										{msg.content}
+
+										{#if msg.attachment}
+											<div>
+												{#if msg.attachmentType === "video"}
+													<video
+														src="http://{host}/api/files/messages/{msg.id}/{msg.attachment}"
+														class="attachment"
+														controls
+														loading="lazy"
+													>
+														<track kind="captions" />
+													</video>
+												{:else if msg.attachmentType === "image"}
+													<img
+														src="http://{host}/api/files/messages/{msg.id}/{msg.attachment}"
+														alt={msg.attachment}
+														class="attachment"
+														loading="lazy"
+													/>
+												{/if}
+											</div>
+										{/if}
+									</div>
+								</span>
 
 								<span
 									title="Created: {new Date(msg.created).toLocaleString()}, Updated: {new Date(
@@ -185,21 +242,55 @@
 				{/if}
 			</section>
 
-			<section>
+			<section class="flex justify-center" style="flex-wrap: wrap; gap: var(--u-2);">
+				<button style="width: var(--u-20);" on:click={attachFile}>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="18"
+						height="18"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="feather feather-upload"
+						><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
+							points="17 8 12 3 7 8"
+						/><line x1="12" y1="3" x2="12" y2="15" /></svg
+					>
+				</button>
+
 				<form
-					class="flex justify-center"
-					style="flex-wrap: wrap; gap: var(--u-2);"
+					class="flex justify-space-between"
+					style="flex-wrap: wrap; width: calc(var(--u-100) * 1.8);"
 					on:submit={sendMessage}
 				>
 					<input
 						type="text"
 						name="message"
 						required
-						style="width: calc(100% - var(--u-20) - var(--u-2) * 10);"
+						style="width: calc(100% - var(--u-24) - 1.4rem);"
 						autocomplete="off"
 					/>
 
-					<button style="width: var(--u-20);">Send</button>
+					<button style="width: var(--u-24); margin-left: -2rem;" class="primary">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="feather feather-send"
+							><line x1="22" y1="2" x2="11" y2="13" /><polygon
+								points="22 2 15 22 11 13 2 9 22 2"
+							/></svg
+						>
+					</button>
 				</form>
 			</section>
 
@@ -211,3 +302,13 @@
 		</main>
 	{/if}
 </app>
+
+<style>
+	.attachment {
+		max-width: 100%;
+	}
+
+	video {
+		filter: invert(1) hue-rotate(180deg); /* undo filter */
+	}
+</style>
