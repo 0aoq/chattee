@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Footer from "$lib/components/Footer.svelte";
+
 	import PocketBase, { Record } from "pocketbase";
 	import type { PageData } from "./$types";
 	import { onMount } from "svelte";
@@ -27,7 +29,12 @@
 <app>
 	<main>
 		<section class="mb-4 flex justify-center" style="gap: var(--u-2);">
-			<a href="/{host}/auth" class="chip">Account</a>
+			<a
+				href={pb.authStore.model === null
+					? `/${host}/auth`
+					: `/${host}/u/${pb.authStore.model.username}`}
+				class="chip">Account</a
+			>
 			<a href="/{host}/create-channel" class="chip">Create Channel</a>
 		</section>
 
@@ -67,10 +74,6 @@
 			{/if}
 		</section>
 
-		<section class="grid place-center mt-4">
-			<span>
-				<a href="/{host}/">{host}</a>
-			</span>
-		</section>
+		<Footer {host} />
 	</main>
 </app>

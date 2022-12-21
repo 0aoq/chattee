@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Footer from "$lib/components/Footer.svelte";
+
 	import PocketBase from "pocketbase";
 	import type { PageData } from "./$types";
 	import { onMount } from "svelte";
@@ -91,21 +93,9 @@
 						<p class="mt-4" style="color: red;">{errorMessage}</p>
 					</form>
 				</div>
-			{:else}
-				<button
-					on:click={() => {
-						// clear auth state and reload
-						pb.authStore.clear();
-						window.location.reload();
-					}}>Sign Out</button
-				>
 			{/if}
 		</section>
 
-		<section class="grid place-center mt-4">
-			<span>
-				<a href="/{host}/">{host}</a>
-			</span>
-		</section>
+		<Footer {host} />
 	</main>
 </app>

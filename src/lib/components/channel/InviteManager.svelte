@@ -4,6 +4,7 @@
 
 	export let pb: PocketBase; // <- we're going to create pocketbase like this so we don't have too many clients running
 	export let channel: Record;
+	export let host: string;
 
 	async function deleteInvite(id: string) {
 		// remove invite from channel
@@ -15,6 +16,9 @@
 		});
 
         channel = channel; // <- trigger ui update
+
+		// now delete invite (for real)
+		await pb.collection("invites").delete(id);
 	}
 </script>
 
@@ -29,7 +33,14 @@
 						{invite}
 					</span>
 
-					<div>
+					<div class="flex" style="gap: var(--u-2);">
+						<button class="primary"
+							on:click={() => {
+								navigator.clipboard.writeText(`${window.location.origin}/${host}/invite/${invite}`);
+								alert("Copied to clipboard!");
+							}}>Copy</button
+						>
+
 						<button
 							on:click={() => {
 								deleteInvite(invite);
@@ -43,3 +54,9 @@
 		</div>
 	</section>
 </component>
+
+<style>
+	button {
+		width: max-content;
+	}
+</style>

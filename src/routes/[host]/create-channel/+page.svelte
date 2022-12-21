@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Footer from "$lib/components/Footer.svelte";
+
 	import PocketBase from "pocketbase";
 	import type { PageData } from "./$types";
 	import { onMount } from "svelte";
@@ -58,10 +60,6 @@
 			{/if}
 		</section>
 
-		<section class="grid place-center mt-4">
-			<span>
-				<a href="/{host}/">{host}</a>
-			</span>
-		</section>
+		<Footer {host} />
 	</main>
 </app>

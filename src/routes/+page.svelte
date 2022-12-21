@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Footer from "$lib/components/Footer.svelte";
+
 	let errorMessage = "";
 
 	async function changeServer(e: SubmitEvent) {
@@ -49,6 +51,8 @@
 				</form>
 			</div>
 		</section>
+
+		<Footer host="#" />
 	</main>
 </body>
 

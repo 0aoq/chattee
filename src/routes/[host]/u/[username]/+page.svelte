@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Footer from "$lib/components/Footer.svelte";
+
 	import PocketBase, { Record } from "pocketbase";
 	import type { PageData } from "../$types";
 	import { onMount } from "svelte";
@@ -31,6 +33,31 @@
 		// set returnChannel
 		returnChannel = new URLSearchParams(window.location.search).get("return_channel");
 	});
+
+	async function changePfp() {
+		// get new image...
+		if (!pb.authStore.model) return;
+		if (!pb.authStore.model.id === (user.id as any)) return;
+
+		// create input
+		const input = document.createElement("input");
+		input.type = "file";
+		input.accept = "image/jpg, image/jpeg, image/png, image/svg+xml, image/gif";
+		input.click();
+
+		// wait for change
+		input.addEventListener("change", async () => {
+			if (!input.files || !pb.authStore.model) return;
+			let file = input.files[0];
+
+			// upload
+			const data = new FormData();
+			data.set("avatar", file);
+
+			await pb.collection("users").update(pb.authStore.model.id, data);
+			window.location.reload();
+		});
+	}
 </script>
 
 <app>
@@ -65,30 +92,80 @@
 			<div class="mb-8">
 				<h1>{username}</h1>
 
-				<div class="flex" style="gap: var(--u-2);">
-					{#each userBadges as badge}
-						<span class="chip">{badge}</span>
-					{/each}
-				</div>
+				{#if pb.authStore.model && user.id === pb.authStore.model.id}
+					<section class="mb-2">
+						Actions:
+
+						<div class="flex mt-2" style="gap: var(--u-2);">
+							<button
+								style="width: max-content;"
+								class="primary"
+								on:click={() => {
+									// clear auth state and reload
+									pb.authStore.clear();
+									window.location.href = `/${host}/auth`;
+								}}>Sign Out</button
+							>
+						</div>
+					</section>
+				{/if}
+
+				{#if userBadges.length > 0}
+					<section>
+						<span class="flex align-center" style="gap: var(--u-2);">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="18"
+								height="18"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="var(--primary-low)"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="feather feather-award"
+								><circle cx="12" cy="8" r="7" /><polyline
+									points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"
+								/></svg
+							>
+
+							<span>
+								Badges in <i>{host}</i>
+								<sup
+									title="Badges help show a user's credibility in a specific server. They can only be assigned by server admins."
+									style="text-decoration: underline;">&lpar;?&rpar;</sup
+								>
+							</span>
+						</span>
+
+						<div class="flex mt-4" style="gap: var(--u-2);">
+							{#each userBadges as badge}
+								<span class="chip">{badge}</span>
+							{/each}
+						</div>
+					</section>
+				{/if}
 			</div>
 
 			<div class="flex mb-4" style="gap: var(--u-4); flex-wrap: wrap;">
-				<img
-					src="http://{host}/api/files/_pb_users_auth_/{user.id}/{user.avatar}?thumb=200x200"
-					alt="{username}&apos;s avatar"
-					title="{username}&apos;s avatar"
-					class="pfp"
-				/>
+				<div>
+					<img
+						src="http://{host}/api/files/_pb_users_auth_/{user.id}/{user.avatar}?thumb=200x200"
+						alt="{username}&apos;s avatar"
+						title="{username}&apos;s avatar"
+						class="pfp"
+					/>
+
+					{#if pb.authStore.model && user.id === pb.authStore.model.id}
+						<button on:click={changePfp}>Change Picture</button>
+					{/if}
+				</div>
 
 				<p>Description goes here later ahahaha, max 150 characters</p>
 			</div>
 		</section>
 
-		<section class="grid place-center mt-4">
-			<span>
-				<a href="/{host}/">{host}</a>
-			</span>
-		</section>
+		<Footer {host} />
 	</main>
 </app>
 

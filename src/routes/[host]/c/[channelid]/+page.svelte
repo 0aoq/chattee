@@ -1,7 +1,9 @@
 <script lang="ts">
 	// @ts-nocheck
 	import InviteManager from "$lib/components/channel/InviteManager.svelte";
+	import MembersList from "$lib/components/channel/MembersList.svelte";
 	import Message from "$lib/components/channel/Message.svelte";
+	import Footer from "$lib/components/Footer.svelte";
 
 	import PocketBase, { Record } from "pocketbase";
 	import type { PageData } from "./$types";
@@ -189,9 +191,20 @@
 						page = "invites";
 					}}>Manage Invites</button
 				>
+				<button
+					on:click={() => {
+						page = "members";
+					}}>Manage Members</button
+				>
 			{:else if pb.authStore.model && channel && channel.members && channel.members.includes(pb.authStore.model.id)}
 				<!-- does have account, is a member of this channel, but isn't the owner -->
 				<button on:click={leaveChannel}>Leave Channel</button>
+
+				<button
+					on:click={() => {
+						page = "members";
+					}}>View Members</button
+				>
 			{:else if pb.authStore.model && channel}
 				<!-- does have account, but isn't a member of this channel -->
 				<button
@@ -287,7 +300,19 @@
 					<p style="color: red;">{messageSendError}</p>
 				</section>
 			{:else if page === "invites"}
-				<InviteManager {pb} {channel} />
+				<InviteManager {pb} {channel} {host} />
+
+				<section class="mt-4 flex justify-center">
+					<button
+						class="primary"
+						style="width: max-content;"
+						on:click={() => {
+							page = "default";
+						}}>Return to Messages</button
+					>
+				</section>
+			{:else if page === "members"}
+				<MembersList {pb} {channel} {host} />
 
 				<section class="mt-4 flex justify-center">
 					<button
@@ -300,11 +325,7 @@
 				</section>
 			{/if}
 
-			<section class="grid place-center mt-4">
-				<span>
-					<a href="/{host}/">{host}</a>
-				</span>
-			</section>
+			<Footer {host} />
 		</main>
 	{/if}
 </app>

@@ -16,7 +16,7 @@
 					"maxSelect": 1,
 					"maxSize": 5242880,
 					"mimeTypes": ["image/jpg", "image/jpeg", "image/png", "image/svg+xml", "image/gif"],
-					"thumbs": ["50x50", "100x100", "200x200", "250x250", "512x512"]
+					"thumbs": ["25x25", "35x35", "50x50", "100x100", "200x200", "250x250", "512x512"]
 				}
 			},
 			{
@@ -29,6 +29,19 @@
 				"options": {
 					"min": null,
 					"max": null,
+					"pattern": ""
+				}
+			},
+			{
+				"id": "ozjiqxr2",
+				"name": "bio",
+				"type": "text",
+				"system": false,
+				"required": false,
+				"unique": false,
+				"options": {
+					"min": null,
+					"max": 150,
 					"pattern": ""
 				}
 			}
@@ -188,9 +201,9 @@
 				}
 			}
 		],
-		"listRule": "",
-		"viewRule": "",
-		"createRule": "",
+		"listRule": "@request.auth.id = channel.members.id || @request.auth.id = channel.owner",
+		"viewRule": "@request.auth.id = channel.members.id || @request.auth.id = channel.owner",
+		"createRule": "@request.auth.id = channel.members.id || @request.auth.id = channel.owner",
 		"updateRule": "@request.auth.id = sender.id",
 		"deleteRule": "@request.auth.id = sender.id  || @request.auth.id = channel.owner.id",
 		"options": {}
