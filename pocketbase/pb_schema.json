@@ -135,6 +135,19 @@
 				}
 			},
 			{
+				"id": "mkxdofbj",
+				"name": "sender",
+				"type": "relation",
+				"system": false,
+				"required": true,
+				"unique": false,
+				"options": {
+					"maxSelect": 1,
+					"collectionId": "_pb_users_auth_",
+					"cascadeDelete": false
+				}
+			},
+			{
 				"id": "mcyt3jij",
 				"name": "content",
 				"type": "text",
@@ -148,16 +161,30 @@
 				}
 			},
 			{
-				"id": "mkxdofbj",
-				"name": "sender",
-				"type": "relation",
+				"id": "kzk7kkjh",
+				"name": "attachment",
+				"type": "file",
 				"system": false,
-				"required": true,
+				"required": false,
 				"unique": false,
 				"options": {
 					"maxSelect": 1,
-					"collectionId": "_pb_users_auth_",
-					"cascadeDelete": false
+					"maxSize": 10000000,
+					"mimeTypes": [],
+					"thumbs": ["50x50", "100x100", "150x150", "200x200", "250x250", "512x512"]
+				}
+			},
+			{
+				"id": "imeqj4w2",
+				"name": "attachmentType",
+				"type": "text",
+				"system": false,
+				"required": false,
+				"unique": false,
+				"options": {
+					"min": null,
+					"max": null,
+					"pattern": ""
 				}
 			}
 		],
@@ -165,7 +192,7 @@
 		"viewRule": "",
 		"createRule": "",
 		"updateRule": "@request.auth.id = sender.id",
-		"deleteRule": "@request.auth.id = sender.id  || @request.auth.id = channel.creator.id",
+		"deleteRule": "@request.auth.id = sender.id  || @request.auth.id = channel.owner.id",
 		"options": {}
 	},
 	{
@@ -206,6 +233,42 @@
 		"createRule": "@request.auth.id != null",
 		"updateRule": "@request.auth.id != null",
 		"deleteRule": "@request.auth.id = channel.owner.id",
+		"options": {}
+	},
+	{
+		"id": "7rb8o2f2pdlzjnz",
+		"name": "user_badges",
+		"type": "base",
+		"system": false,
+		"schema": [
+			{
+				"id": "ight4uzz",
+				"name": "user",
+				"type": "relation",
+				"system": false,
+				"required": true,
+				"unique": true,
+				"options": {
+					"maxSelect": 1,
+					"collectionId": "_pb_users_auth_",
+					"cascadeDelete": true
+				}
+			},
+			{
+				"id": "vyzugqom",
+				"name": "badges",
+				"type": "json",
+				"system": false,
+				"required": true,
+				"unique": false,
+				"options": {}
+			}
+		],
+		"listRule": "",
+		"viewRule": "",
+		"createRule": "@request.auth.id != null",
+		"updateRule": null,
+		"deleteRule": null,
 		"options": {}
 	}
 ]

@@ -13,11 +13,16 @@
 	let user: Record = {} as any;
 	let returnChannel: string | null;
 
+	let userBadges = [] as any;
+
 	onMount(async () => {
 		// load user
 		try {
 			user = await pb.collection("users").getFirstListItem(`username = "${username}"`);
-			user = user.items[0];
+
+			// load user badges
+			userBadges = await pb.collection("user_badges").getFirstListItem(`user = "${user.id}"`);
+			userBadges = userBadges.badges;
 		} catch {
 			// return home if we fail
 			// window.location.href = `/${host}/`;
@@ -57,7 +62,15 @@
 
 	<main>
 		<section>
-			<h1>{username}</h1>
+			<div class="mb-8">
+				<h1>{username}</h1>
+
+				<div class="flex" style="gap: var(--u-2);">
+					{#each userBadges as badge}
+						<span class="chip">{badge}</span>
+					{/each}
+				</div>
+			</div>
 
 			<div class="flex mb-4" style="gap: var(--u-4); flex-wrap: wrap;">
 				<img
@@ -92,5 +105,21 @@
 
 	.pfp:active {
 		transform: scale(1.02) translateY(2px);
+	}
+
+	span.chip {
+		color: hsl(0, 0%, 0%);
+		background: hsl(208, 8%, 93%);
+		border-radius: 360px;
+		padding: 0.2rem 1rem;
+		font-size: 0.8rem;
+		cursor: pointer;
+		user-select: none;
+		transition: all 0.05s;
+	}
+	span.chip:hover {
+		background: hsl(208, 8%, 87%);
+		text-decoration: none;
+		color: hsl(0, 0%, 0%);
 	}
 </style>

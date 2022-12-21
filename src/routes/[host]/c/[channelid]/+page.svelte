@@ -1,5 +1,7 @@
 <script lang="ts">
 	// @ts-nocheck
+	import InviteManager from "$lib/components/channel/InviteManager.svelte";
+	import Message from "$lib/components/channel/Message.svelte";
 
 	import PocketBase, { Record } from "pocketbase";
 	import type { PageData } from "./$types";
@@ -43,11 +45,21 @@
 			if (data.record.channel !== channelid) return; // <- message must be for this channel!
 
 			// add to messages
-			const msgFull = await pb.collection("messages").getOne(data.record.id, {
-				expand: "sender"
-			});
+			try {
+				const msgFull = await pb.collection("messages").getOne(data.record.id, {
+					expand: "sender"
+				});
 
-			messages = [...messages, msgFull]; // not using .push so svelte can update it
+				messages = [...messages, msgFull]; // not using .push so svelte can update it
+			} catch {
+				// message got deleted, reset list
+				const msgs = await pb.collection("messages").getList(1, 50, {
+					sort: "created",
+					expand: "sender"
+				});
+
+				messages = msgs.items;
+			}
 		});
 	});
 
@@ -61,6 +73,7 @@
 	}
 
 	let attachedFile: File | null = null;
+	let messageSendError = "";
 	async function sendMessage(e: any) {
 		e.preventDefault();
 		if (!pb.authStore.model) return; // <- we need a user!
@@ -77,10 +90,14 @@
 			if (attachedFile) {
 				data.append("attachment", attachedFile);
 
-				const n = attachedFile.name;
+				const n = attachedFile.name.toLowerCase();
 				data.set(
 					"attachmentType",
-					n.endsWith(".mp4") || n.endsWith(".webm") || n.endsWith(".mov") ? "video" : "image"
+					n.endsWith(".mp4") || n.endsWith(".webm") || n.endsWith(".mov")
+						? "video"
+						: n.endsWith(".png") || n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".svg")
+						? "image"
+						: "file"
 				);
 			}
 
@@ -88,8 +105,12 @@
 			await pb.collection("messages").create(data);
 
 			e.target.message.value = "";
-		} catch {
-			alert("Failed to send message!");
+		} catch (err: any) {
+			messageSendError = "Message must be less than 1000 character(s).";
+
+			setTimeout(() => {
+				messageSendError = "";
+			}, 2000);
 		}
 	}
 
@@ -104,6 +125,8 @@
 				// add our invite id to channel.invites
 				invites: [...(channel.invites || []), invite.id]
 			});
+
+			channel = await pb.collection("channels").getOne(channelid); // <- trigger InviteManager UI update
 
 			alert(`${window.location.origin}/${host}/invite/${invite.id}`);
 		} catch {
@@ -139,6 +162,9 @@
 			attachedFile = input.files[0];
 		});
 	}
+
+	// handle page manager
+	let page = "default";
 </script>
 
 <app>
@@ -158,6 +184,11 @@
 			{#if pb.authStore.model && channel && channel.expand && pb.authStore.model.id === channelOwner.id}
 				<!-- does have account, is a member of this channel, and is the owner of this channel -->
 				<button on:click={deleteChannel}>Delete Channel</button>
+				<button
+					on:click={() => {
+						page = "invites";
+					}}>Manage Invites</button
+				>
 			{:else if pb.authStore.model && channel && channel.members && channel.members.includes(pb.authStore.model.id)}
 				<!-- does have account, is a member of this channel, but isn't the owner -->
 				<button on:click={leaveChannel}>Leave Channel</button>
@@ -179,7 +210,7 @@
 				>
 			{/if}
 
-			{#if pb.authStore.model && channel && channel.expand}
+			{#if pb.authStore.model && channel && channel.expand && channel.members && channel.members.includes(pb.authStore.model.id)}
 				<button class="primary" on:click={createInvite}>Create Invite</button>
 			{/if}
 		</div>
@@ -187,94 +218,23 @@
 
 	{#if pb.authStore.model && (channel.members || []).includes(pb.authStore.model.id)}
 		<main>
-			<section class="flex justify-center mb-4" style="gap: var(--u-2); flex-wrap: wrap;">
-				{#if pb.authStore.model}
-					<div class="file-browser" style="width: 100%;">
-						{#each messages as msg}
-							<div class="listing message" id={msg.id}>
-								<span class="flex">
-									<b
-										><a href="/{host}/u/{msg.expand.sender.username}?return_channel={channelid}"
-											>{msg.expand.sender.username + " "}</a
-										></b
-									>:
-									<div>
-										{msg.content}
+			{#if page === "default"}
+				<section class="flex justify-center mb-4" style="gap: var(--u-2); flex-wrap: wrap;">
+					{#if pb.authStore.model}
+						<div class="file-browser" style="width: 100%;">
+							{#each messages as msg}
+								<Message {msg} {host} {pb} {channel} {channelOwner} />
+							{:else}
+								<p>No message results!</p>
+							{/each}
+						</div>
+					{:else}
+						<p>Please create an account or sign in!</p>
+					{/if}
+				</section>
 
-										{#if msg.attachment}
-											<div>
-												{#if msg.attachmentType === "video"}
-													<video
-														src="http://{host}/api/files/messages/{msg.id}/{msg.attachment}"
-														class="attachment"
-														controls
-														loading="lazy"
-													>
-														<track kind="captions" />
-													</video>
-												{:else if msg.attachmentType === "image"}
-													<img
-														src="http://{host}/api/files/messages/{msg.id}/{msg.attachment}"
-														alt={msg.attachment}
-														class="attachment"
-														loading="lazy"
-													/>
-												{/if}
-											</div>
-										{/if}
-									</div>
-								</span>
-
-								<span
-									title="Created: {new Date(msg.created).toLocaleString()}, Updated: {new Date(
-										msg.updated
-									).toLocaleString()}"
-								>
-									{new Date(msg.created).toLocaleDateString()}
-								</span>
-							</div>
-						{:else}
-							<p>No message results!</p>
-						{/each}
-					</div>
-				{:else}
-					<p>Please create an account or sign in!</p>
-				{/if}
-			</section>
-
-			<section class="flex justify-center" style="flex-wrap: wrap; gap: var(--u-2);">
-				<button style="width: var(--u-20);" on:click={attachFile}>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="18"
-						height="18"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="feather feather-upload"
-						><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
-							points="17 8 12 3 7 8"
-						/><line x1="12" y1="3" x2="12" y2="15" /></svg
-					>
-				</button>
-
-				<form
-					class="flex justify-space-between"
-					style="flex-wrap: wrap; width: calc(var(--u-100) * 1.8);"
-					on:submit={sendMessage}
-				>
-					<input
-						type="text"
-						name="message"
-						required
-						style="width: calc(100% - var(--u-24) - 1.4rem);"
-						autocomplete="off"
-					/>
-
-					<button style="width: var(--u-24); margin-left: -2rem;" class="primary">
+				<section class="flex justify-center" style="flex-wrap: wrap; gap: var(--u-2);">
+					<button style="width: var(--u-20);" on:click={attachFile}>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							width="18"
@@ -285,14 +245,60 @@
 							stroke-width="2"
 							stroke-linecap="round"
 							stroke-linejoin="round"
-							class="feather feather-send"
-							><line x1="22" y1="2" x2="11" y2="13" /><polygon
-								points="22 2 15 22 11 13 2 9 22 2"
-							/></svg
+							class="feather feather-upload"
+							><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
+								points="17 8 12 3 7 8"
+							/><line x1="12" y1="3" x2="12" y2="15" /></svg
 						>
 					</button>
-				</form>
-			</section>
+
+					<form
+						class="flex justify-space-between"
+						style="flex-wrap: wrap; width: calc(var(--u-100) * 1.8);"
+						on:submit={sendMessage}
+					>
+						<input
+							type="text"
+							name="message"
+							required
+							style="width: calc(100% - var(--u-24) - 1.4rem);"
+							autocomplete="off"
+						/>
+
+						<button style="width: var(--u-24); margin-left: -2rem;" class="primary">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="18"
+								height="18"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="feather feather-send"
+								><line x1="22" y1="2" x2="11" y2="13" /><polygon
+									points="22 2 15 22 11 13 2 9 22 2"
+								/></svg
+							>
+						</button>
+					</form>
+
+					<p style="color: red;">{messageSendError}</p>
+				</section>
+			{:else if page === "invites"}
+				<InviteManager {pb} {channel} />
+
+				<section class="mt-4 flex justify-center">
+					<button
+						class="primary"
+						style="width: max-content;"
+						on:click={() => {
+							page = "default";
+						}}>Return to Messages</button
+					>
+				</section>
+			{/if}
 
 			<section class="grid place-center mt-4">
 				<span>
@@ -302,13 +308,3 @@
 		</main>
 	{/if}
 </app>
-
-<style>
-	.attachment {
-		max-width: 100%;
-	}
-
-	video {
-		filter: invert(1) hue-rotate(180deg); /* undo filter */
-	}
-</style>

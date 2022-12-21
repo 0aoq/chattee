@@ -36,8 +36,14 @@
 				// TODO: that
 			};
 
-			await pb.collection("users").create(data);
+			const u = await pb.collection("users").create(data);
 			await login(e);
+
+			// create badges record now
+			await pb.collection("user_badges").create({
+				user: u.id,
+				badges: []
+			});
 		} catch (err: any) {
 			errorMessage = err;
 		}
