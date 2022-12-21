@@ -34,6 +34,7 @@
 		returnChannel = new URLSearchParams(window.location.search).get("return_channel");
 	});
 
+	// handle changing profile picture
 	async function changePfp() {
 		// get new image...
 		if (!pb.authStore.model) return;
@@ -57,6 +58,25 @@
 			await pb.collection("users").update(pb.authStore.model.id, data);
 			window.location.reload();
 		});
+	}
+
+	// handle bio editing
+	let bioEditMode = false;
+	let bioEditContent: HTMLElement;
+
+	async function saveBio(e: any) {
+		if (!pb.authStore.model) return;
+		if (!bioEditContent) return;
+
+		// update user bio
+		await pb.collection("users").update(pb.authStore.model.id, {
+			bio: bioEditContent.innerText
+		});
+
+		user.bio = bioEditContent.innerText;
+
+		// remove bio editor
+		bioEditMode = false;
 	}
 </script>
 
@@ -161,7 +181,27 @@
 					{/if}
 				</div>
 
-				<p>Description goes here later ahahaha, max 150 characters</p>
+				<div>
+					{#if !bioEditMode}
+						<p style="max-width: var(--u-100);">{user.bio || ""}</p>
+					{:else}
+						<p contenteditable="true" style="max-width: var(--u-100);" bind:this={bioEditContent}>
+							{user.bio || "<bio goes here>"}
+						</p>
+
+						<button class="primary mt-2" style="width: max-content;" on:click={saveBio}>Save</button
+						>
+					{/if}
+
+					{#if pb.authStore.model && user.id === pb.authStore.model.id && !bioEditMode}
+						<button
+							class="mt-2"
+							on:click={() => {
+								bioEditMode = true;
+							}}>Edit Bio</button
+						>
+					{/if}
+				</div>
 			</div>
 		</section>
 

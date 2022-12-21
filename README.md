@@ -1,4 +1,4 @@
-# openchat
+# ☕ chattee
 
 Open-source chat app built on [PocketBase](https://pocketbase.io)
 
@@ -16,4 +16,4 @@ Required PocketBase schema can be found in `./pocketbase/pb_schema.json`
 - User profiles
   - Badges (can be assigned by admin only)
   - User avatar
-  - User bio (soon)
+  - User bio

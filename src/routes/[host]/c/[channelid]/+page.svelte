@@ -107,6 +107,7 @@
 			await pb.collection("messages").create(data);
 
 			e.target.message.value = "";
+			attachedFile = null;
 		} catch (err: any) {
 			messageSendError = "Message must be less than 1000 character(s).";
 
