@@ -8,7 +8,7 @@
 	export const { host, code } = data;
 
 	// create pb client
-	const pb = new PocketBase(`http://${host}`);
+	const pb = new PocketBase(`${window.location.protocol}//${host}`);
 
 	onMount(async () => {
 		if (!pb.authStore.model) return (window.location.href = `/${host}/auth`); // <- we need a user!

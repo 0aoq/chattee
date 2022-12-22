@@ -10,7 +10,7 @@
 	export const { host } = data;
 
 	// create pocketbase client
-	const pb = new PocketBase(`http://${host}`);
+	const pb = new PocketBase(`${window.location.protocol}//${host}`);
 	let myChannels: Array<Record> = [];
 
 	onMount(async () => {

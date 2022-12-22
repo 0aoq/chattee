@@ -10,7 +10,7 @@
 	export const { host, username } = data;
 
 	// create pb client
-	const pb = new PocketBase(`http://${host}`);
+	const pb = new PocketBase(`${window.location.protocol}//${host}`);
 
 	let user: Record = {} as any;
 	let returnChannel: string | null;
@@ -170,7 +170,7 @@
 			<div class="flex mb-4" style="gap: var(--u-4); flex-wrap: wrap;">
 				<div>
 					<img
-						src="http://{host}/api/files/_pb_users_auth_/{user.id}/{user.avatar}?thumb=200x200"
+						src="{window.location.protocol}//{host}/api/files/_pb_users_auth_/{user.id}/{user.avatar}?thumb=200x200"
 						alt="{username}&apos;s avatar"
 						title="{username}&apos;s avatar"
 						class="pfp"

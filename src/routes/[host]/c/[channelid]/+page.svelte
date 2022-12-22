@@ -14,7 +14,7 @@
 	export const { host, channelid } = data;
 
 	// create pb client
-	const pb = new PocketBase(`http://${host}`);
+	const pb = new PocketBase(`${window.location.protocol}//${host}`);
 
 	let messages: Array<Record> = [];
 

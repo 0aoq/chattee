@@ -35,7 +35,7 @@
 			<div>
 				{#if msg.attachmentType === "video"}
 					<video
-						src="http://{host}/api/files/messages/{msg.id}/{msg.attachment}"
+						src="{window.location.protocol}//{host}/api/files/messages/{msg.id}/{msg.attachment}"
 						class="attachment"
 						controls
 						loading="lazy"
@@ -44,7 +44,7 @@
 					</video>
 				{:else if msg.attachmentType === "image"}
 					<img
-						src="http://{host}/api/files/messages/{msg.id}/{msg.attachment}"
+						src="{window.location.protocol}//{host}/api/files/messages/{msg.id}/{msg.attachment}"
 						alt={msg.attachment}
 						class="attachment"
 						loading="lazy"
@@ -52,7 +52,7 @@
 				{:else}
 					<FileDownload
 						file={msg.attachment}
-						url="http://{host}/api/files/messages/{msg.id}/{msg.attachment}"
+						url="{window.location.protocol}//{host}/api/files/messages/{msg.id}/{msg.attachment}"
 					/>
 				{/if}
 			</div>

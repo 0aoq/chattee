@@ -50,7 +50,7 @@
 						>
 							<img
 								class="pfp"
-								src="http://{host}/api/files/_pb_users_auth_/{member.id}/{member.avatar}?thumb=35x35"
+								src="{window.location.protocol}//{host}/api/files/_pb_users_auth_/{member.id}/{member.avatar}?thumb=35x35"
 								alt="{member.username}'s avatar"
 								loading="lazy"
 							/>

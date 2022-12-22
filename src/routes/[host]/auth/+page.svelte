@@ -10,7 +10,7 @@
 	export const { host } = data;
 
 	// create pb client
-	const pb = new PocketBase(`http://${host}`);
+	const pb = new PocketBase(`${window.location.protocol}//${host}`);
 
 	// handle form submit
 	let errorMessage = "";
