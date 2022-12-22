@@ -12,7 +12,7 @@
 			// load server page
 			if (res.code === 404)
 				window.location.href = `/${server.hostname}${
-					server.port !== undefined ? `:${server.port}` : ""
+					server.port !== "" ? `:${server.port}` : ""
 				}/`;
 			else errorMessage = "Server is invalid.";
 		} catch {
@@ -30,9 +30,7 @@
 		<section>
 			<h1>Manage Connection</h1>
 
-			<p>
-				Manage your server connection. This determines where we load content from.
-			</p>
+			<p>Manage your server connection. This determines where we load content from.</p>
 
 			<!-- Connection Form -->
 			<div class="grid place-center">
