@@ -10,7 +10,7 @@
 	export const { host } = data;
 
 	// create pb client
-	const pb = new PocketBase(`${window.location.protocol}//${host}`);
+	let pb = new PocketBase(`http://${host}`);
 
 	// handle form submit
 	let errorMessage = "";
@@ -60,9 +60,15 @@
 
 	let hasAccount = false;
 	onMount(() => {
+		if (window.location.protocol === "https:") pb = new PocketBase(`https://${host}`);
+
 		if (pb.authStore.model !== null) hasAccount = true;
 	});
 </script>
+
+<svelte:head>
+	<title>Auth - Chattee!</title>
+</svelte:head>
 
 <app>
 	<main>

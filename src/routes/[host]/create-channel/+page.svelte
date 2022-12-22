@@ -10,7 +10,7 @@
 	export const { host } = data;
 
 	// create pb client
-	const pb = new PocketBase(`${window.location.protocol}//${host}`);
+	let pb = new PocketBase(`http://${host}`);
 
 	// handle form submit
 	let errorMessage = "";
@@ -33,7 +33,15 @@
 			errorMessage = err.toString();
 		}
 	}
+
+	onMount(() => {
+		if (window.location.protocol === "https:") pb = new PocketBase(`https://${host}`);
+	});
 </script>
+
+<svelte:head>
+	<title>Create Channel - Chattee!</title>
+</svelte:head>
 
 <app>
 	<main>

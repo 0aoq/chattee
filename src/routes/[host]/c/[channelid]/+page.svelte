@@ -14,7 +14,7 @@
 	export const { host, channelid } = data;
 
 	// create pb client
-	const pb = new PocketBase(`${window.location.protocol}//${host}`);
+	let pb = new PocketBase(`http://${host}`);
 
 	let messages: Array<Record> = [];
 
@@ -22,6 +22,8 @@
 	let channelOwner = {} as any;
 
 	onMount(async () => {
+		if (window.location.protocol === "https:") pb = new PocketBase(`https://${host}`);
+
 		// load messages
 		const msgs = await pb.collection("messages").getList(1, 50, {
 			sort: "created",
@@ -169,6 +171,10 @@
 	// handle page manager
 	let page = "default";
 </script>
+
+<svelte:head>
+	<title>Viewing Channel - Chattee!</title>
+</svelte:head>
 
 <app>
 	<nav>

@@ -10,10 +10,12 @@
 	export const { host } = data;
 
 	// create pocketbase client
-	const pb = new PocketBase(`${window.location.protocol}//${host}`);
+	let pb = new PocketBase(`http://${host}`);
 	let myChannels: Array<Record> = [];
 
 	onMount(async () => {
+		if (window.location.protocol === "https:") pb = new PocketBase(`https://${host}`);
+
 		if (!pb.authStore.model) return;
 
 		// fetch channels
@@ -25,6 +27,10 @@
 		myChannels = channels.items;
 	});
 </script>
+
+<svelte:head>
+	<title>Channels List - Chattee!</title>
+</svelte:head>
 
 <app>
 	<main>

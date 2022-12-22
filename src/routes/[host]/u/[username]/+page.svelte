@@ -10,7 +10,7 @@
 	export const { host, username } = data;
 
 	// create pb client
-	const pb = new PocketBase(`${window.location.protocol}//${host}`);
+	let pb = new PocketBase(`http://${host}`);
 
 	let user: Record = {} as any;
 	let returnChannel: string | null;
@@ -18,6 +18,9 @@
 	let userBadges = [] as any;
 
 	onMount(async () => {
+		if (window.location.protocol === "https:")
+			pb = new PocketBase(`https://${host}`)
+
 		// load user
 		try {
 			user = await pb.collection("users").getFirstListItem(`username = "${username}"`);
@@ -79,6 +82,10 @@
 		bioEditMode = false;
 	}
 </script>
+
+<svelte:head>
+	<title>{username} on Chattee!</title>
+</svelte:head>
 
 <app>
 	<nav>
