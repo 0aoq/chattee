@@ -29,3 +29,17 @@
 		</section>
 	</a>
 </component>
+
+<style>
+	section {
+		box-shadow: 0 0 0px rgba(0, 0, 0, 0.25);
+		transition: all 0.2s;
+		border-radius: 0.4rem;
+	}
+
+	section:hover {
+		box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+		border-color: transparent;
+		transform: scale(1.01);
+	}
+</style>

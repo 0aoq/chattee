@@ -15,45 +15,50 @@
 			invites: channel.invites
 		});
 
-        channel = channel; // <- trigger ui update
+		channel = channel; // <- trigger ui update
 
 		// now delete invite (for real)
 		await pb.collection("invites").delete(id);
 	}
 </script>
 
-<component>
-	<section>
-		<h1>Invites For {channel.name}</h1>
+{#if pb.authStore.model && pb.authStore.model.id === channel.owner}
+	<component>
+		<section>
+			<h1>Invites For {channel.name}</h1>
 
-		<div class="file-browser">
-			{#each channel.invites as invite}
-				<div class="listing">
-					<span class="flex justify-center align-center">
-						{invite}
-					</span>
+			<div class="file-browser">
+				{#each channel.invites as invite}
+					<div class="listing">
+						<span class="flex justify-center align-center">
+							{invite}
+						</span>
 
-					<div class="flex" style="gap: var(--u-2);">
-						<button class="primary"
-							on:click={() => {
-								navigator.clipboard.writeText(`${window.location.origin}/${host}/invite/${invite}`);
-								alert("Copied to clipboard!");
-							}}>Copy</button
-						>
+						<div class="flex" style="gap: var(--u-2);">
+							<button
+								class="primary"
+								on:click={() => {
+									navigator.clipboard.writeText(
+										`${window.location.origin}/${host}/invite/${invite}`
+									);
+									alert("Copied to clipboard!");
+								}}>Copy</button
+							>
 
-						<button
-							on:click={() => {
-								deleteInvite(invite);
-							}}>Delete</button
-						>
+							<button
+								on:click={() => {
+									deleteInvite(invite);
+								}}>Delete</button
+							>
+						</div>
 					</div>
-				</div>
-			{:else}
-				<p>No invites found!</p>
-			{/each}
-		</div>
-	</section>
-</component>
+				{:else}
+					<p>No invites found!</p>
+				{/each}
+			</div>
+		</section>
+	</component>
+{/if}
 
 <style>
 	button {

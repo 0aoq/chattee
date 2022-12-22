@@ -193,9 +193,13 @@
 
 				<div>
 					{#if !bioEditMode}
-						<p style="max-width: var(--u-100);">{user.bio || ""}</p>
+						<p style="max-width: var(--u-100); white-space: pre;">{user.bio || ""}</p>
 					{:else}
-						<p contenteditable="true" style="max-width: var(--u-100);" bind:this={bioEditContent}>
+						<p
+							contenteditable="true"
+							style="max-width: var(--u-100); white-space: pre;"
+							bind:this={bioEditContent}
+						>
 							{user.bio || "<bio goes here>"}
 						</p>
 

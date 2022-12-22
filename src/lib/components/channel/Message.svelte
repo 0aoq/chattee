@@ -21,6 +21,41 @@
 		// delete current message
 		await pb.collection("messages").delete(msg.id);
 	}
+
+	function parseMessage(msg: string): string {
+		if (!pb.authStore.model) return "failed";
+
+		// escape < and >
+		msg = msg.replaceAll(/</gm, "&lt;");
+		msg = msg.replaceAll(/>/gm, "&gt;");
+
+		// decode uri
+		// msg = decodeURIComponent(msg);
+
+		// add mention thing
+		if (msg.includes(`(u/${pb.authStore.model.username})`))
+			msg = `<span style="outline: solid 1px var(--primary);">${msg}</span>`;
+
+		// user tags
+		msg = msg.replaceAll(
+			/\(u\/(?<USER>.*)\)/gm,
+			`<a href="/${host}/u/$1?return_channel=${channel.id}" style="color: var(--primary); display: inline;">@$1</a>`
+		);
+
+		// channel tags
+		msg = msg.replaceAll(
+			/\(c\/(?<CHANNEL>.*)\)/gm,
+			`<a href="javascript:window.location.href='/${host}/c/$1'" style="color: var(--primary); display: inline;">#$1</a>`
+		);
+
+		// MARKDOWN
+		msg = msg.replaceAll(/\*\*(.*)\*\*/gm, "<b>$1</b>"); // bold
+		msg = msg.replaceAll(/\*(.*)\*/gm, "<i>$1</i>"); // italic
+		msg = msg.replaceAll(/\_(.*)\_/gm, "<i>$1</i>"); // italic
+
+		// return
+		return msg;
+	}
 </script>
 
 <div class="listing message" id={msg.id}>
@@ -29,7 +64,7 @@
 			><a href="/{host}/u/{msg.expand.sender.username}?return_channel={channel.id}"
 				>{msg.expand.sender.username + " "}</a
 			></b
-		>: {msg.content}
+		>: <span class="message.content" data-raw-content={msg.content}>{@html parseMessage(msg.content)}</span>
 
 		{#if msg.attachment}
 			<div>

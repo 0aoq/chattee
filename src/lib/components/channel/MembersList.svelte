@@ -26,6 +26,19 @@
 		expanded = c.expand.members;
 	}
 
+	async function promoteMember(id: string) {
+		// confirm change
+		const confirmation = confirm("Are you sure you want to do this?");
+		if (!confirmation) return;
+
+		// push to channel
+		await pb.collection("channels").update(channel.id, {
+			owner: id
+		});
+
+		window.location.href = `/${host}/c/${channel.id}`;
+	}
+
 	let expanded = undefined as any;
 	onMount(async () => {
 		if (window.location.protocol === "https:") protocol = "https:";
@@ -69,6 +82,12 @@
 										on:click={() => {
 											kickMember(member.id);
 										}}>Remove</button
+									>
+
+									<button
+										on:click={() => {
+											promoteMember(member.id);
+										}}>Make Owner</button
 									>
 								{:else}
 									<i>&lpar;self&rpar;</i>

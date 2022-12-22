@@ -1,6 +1,7 @@
 <script lang="ts">
 	// @ts-nocheck
 	import InviteManager from "$lib/components/channel/InviteManager.svelte";
+	import ManageChannel from "$lib/components/channel/ManageChannel.svelte";
 	import MembersList from "$lib/components/channel/MembersList.svelte";
 	import Message from "$lib/components/channel/Message.svelte";
 	import Footer from "$lib/components/Footer.svelte";
@@ -26,7 +27,8 @@
 
 		// load messages
 		const msgs = await pb.collection("messages").getList(1, 50, {
-			sort: "created",
+			sort: `created`,
+			filter: `channel.id = "${channelid}"`,
 			expand: "sender"
 		});
 
@@ -59,6 +61,7 @@
 				// message got deleted, reset list
 				const msgs = await pb.collection("messages").getList(1, 50, {
 					sort: "created",
+					filter: `channel.id = "${channelid}"`,
 					expand: "sender"
 				});
 
@@ -66,15 +69,6 @@
 			}
 		});
 	});
-
-	async function deleteChannel() {
-		try {
-			await pb.collection("channels").delete(channelid);
-			window.location.href = `/${host}/`;
-		} catch {
-			alert("Failed to delete channel!");
-		}
-	}
 
 	let attachedFile: File | null = null;
 	let messageSendError = "";
@@ -133,7 +127,8 @@
 
 			channel = await pb.collection("channels").getOne(channelid); // <- trigger InviteManager UI update
 
-			alert(`${window.location.origin}/${host}/invite/${invite.id}`);
+			navigator.clipboard.writeText(`${window.location.origin}/${host}/invite/${invite.id}`)
+			alert("Copied to clipboard!");
 		} catch {
 			alert("Failed to create invite!");
 		}
@@ -142,12 +137,14 @@
 	async function leaveChannel() {
 		try {
 			// remove from array
-			channel.members.splice(channel.members.indexOf(pb.authStore.model.id, 1));
+			channel.members.splice(channel.members.indexOf(pb.authStore.model.id), 1);
 
 			// push to server
 			await pb.collection("channels").update(channelid, {
 				members: channel.members
 			});
+
+			window.location.href = `/${host}/`;
 		} catch {
 			alert("Failed to leave channel!");
 		}
@@ -169,7 +166,16 @@
 	}
 
 	// handle page manager
-	let page = "default";
+	let page;
+
+	function updatePage(v: string) {
+		window.location.href = `#/page:${v}`;
+		page = v;
+	}
+
+	onMount(() => {
+		page = window.location.hash.split("#/page:")[1] || "default";
+	});
 </script>
 
 <svelte:head>
@@ -192,16 +198,10 @@
 		<div>
 			{#if pb.authStore.model && channel && channel.expand && pb.authStore.model.id === channelOwner.id}
 				<!-- does have account, is a member of this channel, and is the owner of this channel -->
-				<button on:click={deleteChannel}>Delete Channel</button>
 				<button
 					on:click={() => {
-						page = "invites";
-					}}>Manage Invites</button
-				>
-				<button
-					on:click={() => {
-						page = "members";
-					}}>Manage Members</button
+						updatePage("settings");
+					}}>Manage Channel</button
 				>
 			{:else if pb.authStore.model && channel && channel.members && channel.members.includes(pb.authStore.model.id)}
 				<!-- does have account, is a member of this channel, but isn't the owner -->
@@ -209,7 +209,7 @@
 
 				<button
 					on:click={() => {
-						page = "members";
+						updatePage("members");
 					}}>View Members</button
 				>
 			{:else if pb.authStore.model && channel}
@@ -314,19 +314,43 @@
 						class="primary"
 						style="width: max-content;"
 						on:click={() => {
-							page = "default";
-						}}>Return to Messages</button
+							updatePage("settings");
+						}}>Return to Settings</button
 					>
 				</section>
 			{:else if page === "members"}
 				<MembersList {pb} {channel} {host} />
 
 				<section class="mt-4 flex justify-center">
+					{#if pb.authStore.model && channel && channel.expand && pb.authStore.model.id === channelOwner.id}
+						<!-- we are channel owner, so we got here through settings -->
+						<button
+							class="primary"
+							style="width: max-content;"
+							on:click={() => {
+								updatePage("settings");
+							}}>Return to Settings</button
+						>
+					{:else}
+						<!-- we are not channel owner, so we did not get here through settings -->
+						<button
+							class="primary"
+							style="width: max-content;"
+							on:click={() => {
+								updatePage("default");
+							}}>Return to Messages</button
+						>
+					{/if}
+				</section>
+			{:else if page === "settings"}
+				<ManageChannel {pb} {channel} {host} {updatePage} />
+
+				<section class="mt-4 flex justify-center">
 					<button
 						class="primary"
 						style="width: max-content;"
 						on:click={() => {
-							page = "default";
+							updatePage("default");
 						}}>Return to Messages</button
 					>
 				</section>
