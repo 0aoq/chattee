@@ -7,6 +7,8 @@
 	export let channel: Record;
 	export let host: string;
 
+	let protocol = "http:";
+
 	async function kickMember(id: string) {
 		// remove from members
 		channel.members.splice(channel.members.indexOf(id), 1);
@@ -26,6 +28,8 @@
 
 	let expanded = undefined as any;
 	onMount(async () => {
+		if (window.location.protocol === "https:") protocol = "https:";
+
 		// expand channel
 		let c = await pb.collection("channels").getOne(channel.id, {
 			expand: "members"
@@ -50,7 +54,7 @@
 						>
 							<img
 								class="pfp"
-								src="{window.location.protocol}//{host}/api/files/_pb_users_auth_/{member.id}/{member.avatar}?thumb=35x35"
+								src="{protocol}//{host}/api/files/_pb_users_auth_/{member.id}/{member.avatar}?thumb=35x35"
 								alt="{member.username}'s avatar"
 								loading="lazy"
 							/>

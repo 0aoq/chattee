@@ -10,6 +10,7 @@
 	export const { host, username } = data;
 
 	// create pb client
+	let protocol = "http:";
 	let pb = new PocketBase(`http://${host}`);
 
 	let user: Record = {} as any;
@@ -18,8 +19,10 @@
 	let userBadges = [] as any;
 
 	onMount(async () => {
-		if (window.location.protocol === "https:")
-			pb = new PocketBase(`https://${host}`)
+		if (window.location.protocol === "https:") {
+			pb = new PocketBase(`https://${host}`);
+			protocol = "https:";
+		}
 
 		// load user
 		try {
@@ -177,7 +180,7 @@
 			<div class="flex mb-4" style="gap: var(--u-4); flex-wrap: wrap;">
 				<div>
 					<img
-						src="{window.location.protocol}//{host}/api/files/_pb_users_auth_/{user.id}/{user.avatar}?thumb=200x200"
+						src="{protocol}//{host}/api/files/_pb_users_auth_/{user.id}/{user.avatar}?thumb=200x200"
 						alt="{username}&apos;s avatar"
 						title="{username}&apos;s avatar"
 						class="pfp"

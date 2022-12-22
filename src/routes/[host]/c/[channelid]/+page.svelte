@@ -185,7 +185,7 @@
 				aria-label="Channel Name: {channel.name || ''}"
 				title="Click to return to channel list"
 			>
-				{channel.name || "You're not supposed to be here..."}
+				{channel.name || "Loading!"}
 			</a>
 		</div>
 
