@@ -8,7 +8,7 @@
 
 		// check if server is valid
 		try {
-			const res = await (await fetch(server.href)).json();
+			const res = await (await fetch(server.href + "/api")).json();
 			// load server page
 			if (res.code === 404)
 				window.location.href = `/${server.hostname}${
